@@ -6,17 +6,16 @@ import logging
 import os
 import random
 from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
 
 import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.components import ssdp
-from homeassistant.components.ssdp import ATTR_UPNP_FRIENDLY_NAME
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
-from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
@@ -50,16 +49,6 @@ def generate_random_mac() -> str:
     """Generate a random MAC address."""
     return ":".join(f"{random.randint(0, 255):02x}" for _ in range(6))
 
-# Import library
-import sys
-from pathlib import Path
-
-lib_path = Path(__file__).parent.parent.parent
-if str(lib_path) not in sys.path:
-    sys.path.insert(0, str(lib_path))
-
-from hisense_tv import AsyncHisenseTV
-
 
 def get_default_cert_paths(hass: HomeAssistant) -> tuple[str, str]:
     """Get default certificate paths in HA config directory."""
@@ -89,6 +78,8 @@ async def validate_connection(
     mac_address: str | None = None,
 ) -> dict[str, Any]:
     """Validate we can connect to the TV."""
+    from hisense_tv import AsyncHisenseTV
+
     # Use provided MAC or generate a random one for dynamic auth
     mac = mac_address or generate_random_mac()
 
@@ -310,7 +301,7 @@ class HisenseTVConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_abort(reason="no_host")
 
         self._discovery_info = discovery_info
-        self._name = discovery_info.upnp.get(ATTR_UPNP_FRIENDLY_NAME, DEFAULT_NAME)
+        self._name = discovery_info.upnp.get("friendlyName", DEFAULT_NAME)
 
         # Try to get unique ID from USN
         usn = discovery_info.ssdp_usn
@@ -398,6 +389,8 @@ class HisenseTVConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle pairing step (PIN entry)."""
+        from hisense_tv import AsyncHisenseTV
+
         errors: dict[str, str] = {}
 
         if user_input is not None:

@@ -34,9 +34,7 @@ from .coordinator import HisenseTVDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-# Import from PyPI package (myhisense-tv)
-from hisense_tv import AsyncHisenseTV
-from hisense_tv.config import get_storage
+# Imported locally in async_setup_entry to avoid blocking the event loop
 
 
 @dataclass
@@ -60,6 +58,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: HisenseTVConfigEntry) -> bool:
     """Set up Hisense TV from a config entry."""
+    from hisense_tv import AsyncHisenseTV
+
     host = entry.data[CONF_HOST]
     port = entry.data.get(CONF_PORT, DEFAULT_PORT)
     mac = entry.data.get(CONF_MAC)

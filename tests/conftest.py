@@ -156,7 +156,7 @@ def mock_hisense_tv_offline() -> Generator[MagicMock, None, None]:
 def mock_config_flow_tv() -> Generator[MagicMock, None, None]:
     """Mock AsyncHisenseTV for config flow tests."""
     with patch(
-        "custom_components.hisense_tv.config_flow.AsyncHisenseTV", autospec=True
+        "hisense_tv.AsyncHisenseTV", autospec=True
     ) as mock_class:
         mock_instance = mock_class.return_value
 
